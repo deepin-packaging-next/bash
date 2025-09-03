@@ -171,6 +171,7 @@ int clear_console(int fd)
 #if defined(__linux__)
   struct vt_stat vtstat;
 #endif
+  char *term;
 
   /* Linux console secure erase (since 2.6.39), this is sufficient there;
      other terminals silently ignore this code.  If they don't and write junk
@@ -188,7 +189,10 @@ int clear_console(int fd)
   if (is_pseudo_tty(STDIN_FILENO))
     return 0;
 
-  if (!strcmp(getenv("TERM"), "screen"))
+  term = getenv("TERM");
+  if (!strcmp(term, "screen"))
+      return 0;
+  if (strlen(term) >= strlen("screen.") && !strncmp(term, "screen.", strlen("screen.")))
       return 0;
 
   /* get current vt */

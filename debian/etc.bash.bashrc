@@ -21,15 +21,22 @@ if ! [ -n "${SUDO_USER-}" -a -n "${SUDO_PS1-}" ]; then
   PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
 fi
 
-# Commented out, don't overwrite xterm -T "title" -n "icontitle" by default.
-# If this is an xterm set the title to user@host:dir
-#case "$TERM" in
-#xterm*|rxvt*)
-#    PROMPT_COMMAND='echo -ne "\033]0;${USER}@${HOSTNAME}: ${PWD}\007"'
-#    ;;
-#*)
-#    ;;
-#esac
+case "$TERM" in
+xterm*|vte*|gnome*)
+    for _hook in /etc/profile.d/vte*.sh; do : ; done
+    if [ -r $_hook ]; then
+        . $_hook
+    fi
+    unset _hook
+    ;;
+xterm*|rxvt*)
+    # Commented out, don't overwrite xterm -T "title" -n "icontitle" by default.
+    # If this is an xterm set the title to user@host:dir
+    #PROMPT_COMMAND='echo -ne "\033]0;${USER}@${HOSTNAME}: ${PWD}\007"'
+    ;;
+*)
+    ;;
+esac
 
 # enable bash completion in interactive shells
 #if ! shopt -oq posix; then
@@ -41,7 +48,7 @@ fi
 #fi
 
 # if the command-not-found package is installed, use it
-if [ -x /usr/lib/command-not-found -o -x /usr/share/command-not-found/command-not-found ]; then
+if [ -x /usr/lib/command-not-found ] || [ -x /usr/share/command-not-found/command-not-found ]; then
 	function command_not_found_handle {
 	        # check because c-n-f could've been removed in the meantime
                 if [ -x /usr/lib/command-not-found ]; then
@@ -56,3 +63,17 @@ if [ -x /usr/lib/command-not-found -o -x /usr/share/command-not-found/command-no
 		fi
 	}
 fi
+
+# Source profile.d even though "it's meant to be for login shells
+# only". This is commented out by default, for not cluttering the
+# shell with things a user might not expect.  Please see above
+# for the explict hooks for bash-completion and command-not-found.
+
+#if [ -d /etc/profile.d ]; then
+#  for _i in /etc/profile.d/*.sh; do
+#    if [ -r $_i ]; then
+#      . $_i
+#    fi
+#  done
+#  unset _i
+#fi
